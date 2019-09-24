@@ -153,6 +153,12 @@
                         </td></tr>
                 </table>
             </div>
+            <div style="border-style:solid;border-width:2px;">
+                    <strong>
+                        <span> ¡MUCHAS GRACIAS POR TU PREFERENCIA! </span>
+                        <span> ¡TE ESPERAMOS PRONTO!</span>
+                    </strong>
+            </div>
         </t>
     </t>
 </templates>
