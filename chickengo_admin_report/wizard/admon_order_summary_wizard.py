@@ -1,18 +1,26 @@
 # -*- coding: utf-8 -*-
-
 from datetime import datetime, timedelta
 
 from odoo import api, fields, models
-from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DATE_FORMAT
-from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT as DATETIME_FORMAT
+from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
 from odoo.exceptions import ValidationError
 
 
 class AdmonSummaryReportWizard(models.TransientModel):
     _name = 'admon.summary.report.wizard'
 
-    date_start = fields.Date(string='Start Date', required=True, default=fields.Date.today)
-    date_end = fields.Date(string='End Date', required=True, default=fields.Date.today)
+    date_start = fields.Datetime(string='Start Date', required=True, default=fields.Datetime.now)
+    date_end = fields.Datetime(string= 'End Date', required=True, default=fields.Datetime.now)
+
+    @api.onchange('date_start')
+    def _onchange_date_start(self):
+        if self.date_start and self.date_end and self.date_end < self.date_start:
+            self.date_end = self.date_start
+
+    @api.onchange('date_end')
+    def _onchange_date_end(self):
+        if self.date_end and self.date_end < self.date_start:
+            self.date_start = self.date_end
 
     @api.multi
     def print_report(self):
@@ -40,11 +48,11 @@ class ReportAdmonSummaryReportView(models.AbstractModel):
 
     @api.multi
     def _get_report_values(self, docids, data=None):
-        date_start = data['form']['date_start']
-        date_end = data['form']['date_end']
+        date_start = (data['form']['date_start'])
+        date_end = (data['form']['date_end'])
 
-        start_date = datetime.strptime(date_start, DATE_FORMAT)
-        end_date = datetime.strptime(date_end, DATE_FORMAT)
+        start_date = datetime.strptime(date_start, DEFAULT_SERVER_DATETIME_FORMAT)
+        end_date = datetime.strptime(date_end, DEFAULT_SERVER_DATETIME_FORMAT)
         delta = timedelta(days=1)
 
         docs = []
@@ -64,8 +72,8 @@ class ReportAdmonSummaryReportView(models.AbstractModel):
             start_date += delta
 
             orders = self.env['pos.order'].search([
-                ('date_order', '>=', date.strftime(DATETIME_FORMAT)),
-                ('date_order', '<', start_date.strftime(DATETIME_FORMAT)),
+                ('date_order', '>=', date),
+                ('date_order', '<', date_end),
                 ('state', 'in', ['paid', 'done', 'invoiced'])
                 ])
             sos = len(orders)
@@ -74,8 +82,8 @@ class ReportAdmonSummaryReportView(models.AbstractModel):
             total_sales += sales
 
             purchases = self.env['account.invoice'].search([
-                ('date_invoice', '>=', date.strftime(DATETIME_FORMAT)),
-                ('date_invoice', '<', start_date.strftime(DATETIME_FORMAT)),
+                ('date_invoice', '>=', date),
+                ('date_invoice', '<', date_end),
                 ('state', 'in', ['open', 'paid']),
                 ('type', '=', 'in_invoice'),
                 ('journal_id', 'in', [2])
@@ -84,8 +92,8 @@ class ReportAdmonSummaryReportView(models.AbstractModel):
             total_purchase += purchase
 
             invoices = self.env['account.invoice'].search([
-                ('date_invoice', '>=', date.strftime(DATETIME_FORMAT)),
-                ('date_invoice', '<', start_date.strftime(DATETIME_FORMAT)),
+                ('date_invoice', '>=', date),
+                ('date_invoice', '<', date_end),
                 ('state', 'in', ['open', 'paid']), ('type', '=', 'in_invoice'),
                 ('journal_id', 'not in', [2])])
             
