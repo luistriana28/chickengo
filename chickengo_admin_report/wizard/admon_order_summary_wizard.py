@@ -22,7 +22,7 @@ class AdmonSummaryReportWizard(models.TransientModel):
         if self.date_end and self.date_end < self.date_start:
             self.date_start = self.date_end
 
-    @api.multi
+    @api.model
     def print_report(self):
         """
         data
@@ -46,7 +46,7 @@ class ReportAdmonSummaryReportView(models.AbstractModel):
     """
     _name = 'report.chickengo_admin_report.admon_summary_report_view'
 
-    @api.multi
+    @api.model
     def _get_report_values(self, docids, data=None):
         date_start = (data['form']['date_start'])
         date_end = (data['form']['date_end'])
