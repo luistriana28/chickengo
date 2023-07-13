@@ -1,2 +1,0 @@
-enterprise git@github.com:vauxoo/enterprise.git 12.0
-mexico git@git.vauxoo.com:vauxoo/mexico.git 12.0
